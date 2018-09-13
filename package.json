@@ -1,7 +1,7 @@
 {
-  "name": "semta",
+  "name": "Monetta",
   "version": "0.0.1",
-  "description": "Simple Express MongoDB Token Authorization",
+  "description": "Token authorization for MongoDB and Express",
   "main": "index.js",
   "directories": {
     "example": "example"
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glepur/semta.git"
+    "url": "git+https://github.com/glepur/Monetta.git"
   },
   "keywords": [
     "mongo",
@@ -20,6 +20,7 @@
     "token",
     "auth",
     "authorization",
+    "authentication",
     "rest",
     "api",
     "node",
@@ -28,9 +29,9 @@
   "author": "Goran Lepur <goran.lepur1@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/glepur/semta/issues"
+    "url": "https://github.com/glepur/Monetta/issues"
   },
-  "homepage": "https://github.com/glepur/semta#readme",
+  "homepage": "https://github.com/glepur/Monetta#readme",
   "devDependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.3"
