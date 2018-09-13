@@ -1,0 +1,43 @@
+{
+  "name": "semta",
+  "version": "0.0.1",
+  "description": "Simple Express MongoDB Token Authorization",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glepur/semta.git"
+  },
+  "keywords": [
+    "mongo",
+    "mongodb",
+    "express",
+    "token",
+    "auth",
+    "authorization",
+    "rest",
+    "api",
+    "node",
+    "nodejs"
+  ],
+  "author": "Goran Lepur <goran.lepur1@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/glepur/semta/issues"
+  },
+  "homepage": "https://github.com/glepur/semta#readme",
+  "devDependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3"
+  },
+  "dependencies": {
+    "mongodb": "^3.1.4",
+    "mongodb-uri": "^0.9.7",
+    "nanoid": "^1.2.3"
+  }
+}
