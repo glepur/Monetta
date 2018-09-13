@@ -1,2 +1,2 @@
-# semta
-Simple Express MongoDB Token Authorization
+# Monetta
+Token authorization for MongoDB and Express
