@@ -50,4 +50,9 @@ app.post('/logout', auth.logout(), (req, res) =>
   })
 );
 
+app.use((error, req, res, next) => {
+  console.log(error);
+  res.json({ error });
+});
+
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
