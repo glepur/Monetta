@@ -1,8 +1,9 @@
 'use strict';
 
 const express = require('express');
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 const app = express();
+const crypto = require('crypto');
 const Monetta = require('../lib/index.js');
 
 const config = {
@@ -25,6 +26,11 @@ const config = {
   },
   accessTokens: {
     collection: 'tokens'
+  },
+  generatePasswordHash: password => {
+    const hash = crypto.createHmac('sha256', 'Secret squirrel');
+    hash.update(password);
+    return hash.digest('hex');
   }
 };
 
@@ -50,9 +56,9 @@ app.post('/logout', auth.logout(), (req, res) =>
   })
 );
 
-app.use((error, req, res, next) => {
-  console.log(error);
-  res.json({ error });
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.json({ error: err.message });
 });
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
