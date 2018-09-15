@@ -3,7 +3,7 @@
 const express = require('express');
 var bodyParser = require('body-parser');
 const app = express();
-const Monetta = require('../index.js');
+const Monetta = require('../lib/index.js');
 
 const config = {
   mongoConnection: {
