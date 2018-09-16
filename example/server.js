@@ -25,7 +25,8 @@ const config = {
     passwordField: 'password'
   },
   accessTokens: {
-    collection: 'tokens'
+    collection: 'tokens',
+    maxAllowed: 5
   },
   generatePasswordHash: password => {
     const hash = crypto.createHmac('sha256', 'Secret squirrel');
@@ -45,10 +46,7 @@ app.post('/login', auth.login(), (req, res) =>
   res.json({ token: req.authToken })
 );
 app.get('/profile', auth.authorize(), (req, res) =>
-  res.json({
-    message: 'This route requires authorization',
-    profile: { user: req.user }
-  })
+  res.json({ user: req.user })
 );
 app.post('/logout', auth.logout(), (req, res) =>
   res.json({
