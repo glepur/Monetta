@@ -6,5 +6,8 @@
   "ecmaFeatures": {
     "modules": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
   "extends": ["prettier"]
 }
