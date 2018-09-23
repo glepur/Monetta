@@ -18,7 +18,7 @@ const config = {
     ],
     database: 'monetta'
   },
-  // mongoConnectionURI: 'mongodb://localhost/monetta'
+  // mongoConnectionUri: 'mongodb://localhost/monetta',
   users: {
     collection: 'users',
     mainField: 'username',
