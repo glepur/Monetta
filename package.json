@@ -39,6 +39,7 @@
     "prettier": "^1.14.2"
   },
   "dependencies": {
+    "deep-extend": "^0.6.0",
     "mongodb": "^3.1.4",
     "mongodb-uri": "^0.9.7",
     "nanoid": "^1.2.3"
