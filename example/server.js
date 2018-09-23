@@ -53,6 +53,11 @@ app.post('/logout', auth.logout(), (req, res) =>
     message: 'Logout succesful'
   })
 );
+app.post('/logout-all', auth.logoutAll(), (req, res) =>
+  res.json({
+    message: 'All devices are logged out'
+  })
+);
 
 app.use((err, req, res, next) => {
   console.log(err);
