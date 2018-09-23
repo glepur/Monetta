@@ -26,6 +26,7 @@ const config = {
   },
   accessTokens: {
     collection: 'tokens',
+    httpHeader: 'x-auth-token',
     maxAllowed: 5
   },
   generatePasswordHash: password => {
