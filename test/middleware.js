@@ -1,21 +1,23 @@
 const Monetta = require('../lib');
 const should = require('chai').should();
 const httpMocks = require('node-mocks-http');
+const sinon = require('sinon');
 const MongoClient = require('mongodb').MongoClient;
 
 const mongoConnectionUri =
   process.env.MONGO_CONNECTION_URI || 'mongodb://localhost/monetta-test';
-
-const auth = new Monetta({
-  mongoConnectionUri,
-  generatePasswordHash: p => p
-});
 
 const testToken = 'test-token';
 const testUser = {
   username: 'test-user',
   password: 'test-password'
 };
+const accessTokenLength = 24;
+
+const auth = new Monetta({
+  mongoConnectionUri,
+  generatePasswordHash: p => p
+});
 
 before(async () => {
   try {
@@ -39,7 +41,9 @@ describe('login()', () => {
       url: '/login',
       body: testUser
     });
-    request.should.have.property('authToken');
+    request.should.have
+      .property('authToken')
+      .with.lengthOf(auth.config.accessTokens.length);
   });
 });
 
@@ -53,24 +57,34 @@ describe('authorize()', () => {
       }
     });
     request.should.have.property('user');
+    request.user.should.have.property('_id');
+    request.user.should.have.property('username');
+    request.user.should.have.property('password');
   });
 });
 
 describe('logout()', () => {
   const logoutMiddleware = auth.logout();
   it('should invalidate "authToken"', async () => {
+    const spy = sinon.spy();
+
     const { authToken } = await callMiddleware(auth.login(), {
       method: 'POST',
       url: '/login',
       body: testUser
     });
+    should.exist(authToken);
+    authToken.should.have.lengthOf(auth.config.accessTokens.length);
+
     await callMiddleware(auth.logout(), {
       method: 'POST',
       url: '/logout',
       headers: {
         'x-auth-token': authToken
       }
-    });
+    }).then(spy);
+    spy.called.should.be.true;
+
     return callMiddleware(auth.authorize(), {
       method: 'GET',
       url: '/profile',
