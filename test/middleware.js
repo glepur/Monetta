@@ -7,7 +7,8 @@ const mongoConnectionUri =
   process.env.MONGO_CONNECTION_URI || 'mongodb://localhost/monetta-test';
 
 const auth = new Monetta({
-  mongoConnectionUri
+  mongoConnectionUri,
+  generatePasswordHash: p => p
 });
 
 const testToken = 'test-token';
@@ -33,49 +34,52 @@ before(async () => {
 
 describe('login()', () => {
   it('should create "authToken" property on "req" when correct credentials supplied', async () => {
-    const request = await loginUserPromisified(testUser);
+    const request = await callMiddleware(auth.login(), {
+      method: 'POST',
+      url: '/login',
+      body: testUser
+    });
     request.should.have.property('authToken');
   });
 });
 
 describe('authorize()', () => {
-  const authMiddleware = auth.authorize();
-  it('should create "user" property on "req" when valid token supplied', done => {
-    const request = httpMocks.createRequest({
+  it('should create "user" property on "req" when valid token supplied', async () => {
+    const request = await callMiddleware(auth.authorize(), {
       method: 'GET',
       url: '/profile',
       headers: {
         'x-auth-token': testToken
       }
     });
-    const response = httpMocks.createResponse();
-    authMiddleware(request, response, error => {
-      if (error) {
-        throw error;
-      }
-      request.should.have.property('user');
-      done();
-    });
+    request.should.have.property('user');
   });
 });
 
 describe('logout()', () => {
   const logoutMiddleware = auth.logout();
-  it('should create "user" property on "req" when valid token supplied', done => {
-    request = httpMocks.createRequest({
+  it('should invalidate "authToken"', async () => {
+    const { authToken } = await callMiddleware(auth.login(), {
+      method: 'POST',
+      url: '/login',
+      body: testUser
+    });
+    await callMiddleware(auth.logout(), {
+      method: 'POST',
+      url: '/logout',
+      headers: {
+        'x-auth-token': authToken
+      }
+    });
+    return callMiddleware(auth.authorize(), {
       method: 'GET',
       url: '/profile',
       headers: {
-        'x-auth-token': testToken
+        'x-auth-token': authToken
       }
-    });
-    response = httpMocks.createResponse();
-    authMiddleware(request, response, error => {
-      if (error) {
-        throw error;
-      }
-      request.should.have.property('user');
-      done();
+    }).catch(err => {
+      should.exist(err);
+      err.should.have.property('message');
     });
   });
 });
@@ -98,20 +102,14 @@ function connectToMongo() {
   );
 }
 
-function loginUserPromisified(user) {
+function callMiddleware(middleware, requestConfig) {
   return new Promise((resolve, reject) => {
-    const loginMiddleware = auth.login();
-    const request = httpMocks.createRequest({
-      method: 'POST',
-      url: '/login',
-      body: user
-    });
+    const request = httpMocks.createRequest(requestConfig);
     const response = httpMocks.createResponse();
-    loginMiddleware(request, response, error => {
+    middleware(request, response, error => {
       if (error) {
-        throw error;
+        reject(error);
       }
-      console.log(request);
       resolve(request);
     });
   });
