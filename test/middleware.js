@@ -68,13 +68,7 @@ describe('authorize()', () => {
 
 describe('logout()', () => {
   it('should invalidate "authToken"', async () => {
-    const { authToken } = await callMiddleware(auth.login(), {
-      method: 'POST',
-      url: '/login',
-      body: testUser
-    });
-    should.exist(authToken);
-    authToken.should.have.lengthOf(auth.config.accessTokens.length);
+    const authToken = await getTokenForUser(testUser);
 
     await callMiddleware(auth.logout(), {
       method: 'POST',
@@ -89,6 +83,43 @@ describe('logout()', () => {
       url: '/profile',
       headers: {
         'x-auth-token': authToken
+      }
+    }).catch(err => {
+      should.exist(err);
+      err.should.have.property('message');
+    });
+  });
+});
+
+describe('logoutAll()', () => {
+  it('should invalidate all auth tokens for specific user', async () => {
+    const authToken1 = await getTokenForUser(testUser);
+    const authToken2 = await getTokenForUser(testUser);
+
+    await callMiddleware(auth.logout(), {
+      method: 'POST',
+      url: '/logout-all',
+      headers: {
+        'x-auth-token': authToken1
+      }
+    }).should.be.fulfilled;
+
+    await callMiddleware(auth.authorize(), {
+      method: 'GET',
+      url: '/profile',
+      headers: {
+        'x-auth-token': authToken1
+      }
+    }).catch(err => {
+      should.exist(err);
+      err.should.have.property('message');
+    });
+
+    return callMiddleware(auth.authorize(), {
+      method: 'GET',
+      url: '/profile',
+      headers: {
+        'x-auth-token': authToken2
       }
     }).catch(err => {
       should.exist(err);
@@ -126,5 +157,18 @@ function callMiddleware(middleware, requestConfig) {
       }
       resolve(request);
     });
+  });
+}
+
+function getTokenForUser(user) {
+  return callMiddleware(auth.login(), {
+    method: 'POST',
+    url: '/login',
+    body: user
+  }).then(request => {
+    request.should.have
+      .property('authToken')
+      .with.lengthOf(auth.config.accessTokens.length);
+    return request.authToken;
   });
 }
