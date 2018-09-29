@@ -40,8 +40,6 @@ before(async () => {
 describe('login()', () => {
   it('should create "authToken" property on "req" when correct credentials supplied', async () => {
     const request = await callMiddleware(auth.login(), {
-      method: 'POST',
-      url: '/login',
       body: testUser
     });
     request.should.have
@@ -53,8 +51,6 @@ describe('login()', () => {
 describe('authorize()', () => {
   it('should create "user" property on "req" when valid token supplied', async () => {
     const request = await callMiddleware(auth.authorize(), {
-      method: 'GET',
-      url: '/profile',
       headers: {
         'x-auth-token': testToken
       }
@@ -71,23 +67,12 @@ describe('logout()', () => {
     const authToken = await getTokenForUser(testUser);
 
     await callMiddleware(auth.logout(), {
-      method: 'POST',
-      url: '/logout',
       headers: {
         'x-auth-token': authToken
       }
     }).should.be.fulfilled;
 
-    return callMiddleware(auth.authorize(), {
-      method: 'GET',
-      url: '/profile',
-      headers: {
-        'x-auth-token': authToken
-      }
-    }).catch(err => {
-      should.exist(err);
-      err.should.have.property('message');
-    });
+    await authorizeWithToken(authToken).should.be.rejectedWith(Error);
   });
 });
 
@@ -96,35 +81,14 @@ describe('logoutAll()', () => {
     const authToken1 = await getTokenForUser(testUser);
     const authToken2 = await getTokenForUser(testUser);
 
-    await callMiddleware(auth.logout(), {
-      method: 'POST',
-      url: '/logout-all',
+    await callMiddleware(auth.logoutAll(), {
       headers: {
         'x-auth-token': authToken1
       }
     }).should.be.fulfilled;
 
-    await callMiddleware(auth.authorize(), {
-      method: 'GET',
-      url: '/profile',
-      headers: {
-        'x-auth-token': authToken1
-      }
-    }).catch(err => {
-      should.exist(err);
-      err.should.have.property('message');
-    });
-
-    return callMiddleware(auth.authorize(), {
-      method: 'GET',
-      url: '/profile',
-      headers: {
-        'x-auth-token': authToken2
-      }
-    }).catch(err => {
-      should.exist(err);
-      err.should.have.property('message');
-    });
+    await authorizeWithToken(authToken1).should.be.rejectedWith(Error);
+    await authorizeWithToken(authToken2).should.be.rejectedWith(Error);
   });
 });
 
@@ -170,5 +134,13 @@ function getTokenForUser(user) {
       .property('authToken')
       .with.lengthOf(auth.config.accessTokens.length);
     return request.authToken;
+  });
+}
+
+function authorizeWithToken(token) {
+  return callMiddleware(auth.authorize(), {
+    headers: {
+      'x-auth-token': token
+    }
   });
 }
