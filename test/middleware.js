@@ -103,6 +103,7 @@ after(async () => {
     const db = client.db();
     await db.dropDatabase();
     client.close();
+    auth.closeDbConnection();
   } catch (err) {
     throw err;
   }
