@@ -1,8 +1,11 @@
 const Monetta = require('../lib');
-const should = require('chai').should();
+const chai = require('chai');
+const should = chai.should();
+const chaiAsPromised = require('chai-as-promised');
 const httpMocks = require('node-mocks-http');
-const sinon = require('sinon');
 const MongoClient = require('mongodb').MongoClient;
+
+chai.use(chaiAsPromised);
 
 const mongoConnectionUri =
   process.env.MONGO_CONNECTION_URI || 'mongodb://localhost/monetta-test';
@@ -64,10 +67,7 @@ describe('authorize()', () => {
 });
 
 describe('logout()', () => {
-  const logoutMiddleware = auth.logout();
   it('should invalidate "authToken"', async () => {
-    const spy = sinon.spy();
-
     const { authToken } = await callMiddleware(auth.login(), {
       method: 'POST',
       url: '/login',
@@ -82,8 +82,7 @@ describe('logout()', () => {
       headers: {
         'x-auth-token': authToken
       }
-    }).then(spy);
-    spy.called.should.be.true;
+    }).should.be.fulfilled;
 
     return callMiddleware(auth.authorize(), {
       method: 'GET',
