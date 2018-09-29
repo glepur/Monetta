@@ -24,6 +24,7 @@ const auth = new Monetta({
 
 before(async () => {
   try {
+    await auth.db.connectionReady();
     const client = await connectToMongo();
     const db = client.db();
     const dbUser = await db.collection('users').insertOne(testUser);
