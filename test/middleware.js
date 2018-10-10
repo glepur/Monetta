@@ -92,6 +92,14 @@ describe('authorize()', () => {
     request.user.should.have.property('username');
     request.user.should.have.property('password');
   });
+  it('should throw error when token not supplied', async () => {
+    await callMiddleware(auth.authorize()).should.be.rejectedWith(Error);
+  });
+  it('should throw error when wrong token supplied', async () => {
+    await callMiddleware(auth.authorize(), {
+      headers: { 'x-auth-token': 'wrongToken' }
+    }).should.be.rejectedWith(Error);
+  });
 });
 
 describe('logout()', () => {
