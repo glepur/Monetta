@@ -105,14 +105,19 @@ describe('authorize()', () => {
 describe('logout()', () => {
   it('should invalidate "authToken"', async () => {
     const authToken = await getTokenForUser(testUser);
-
-    await callMiddleware(auth.logout(), {
-      headers: {
-        'x-auth-token': authToken
-      }
-    }).should.be.fulfilled;
-
+    await logoutUser(authToken).should.be.fulfilled;
     await authorizeWithToken(authToken).should.be.rejectedWith(Error);
+  });
+  it('should throw error when user already logged out', async () => {
+    const authToken = await getTokenForUser(testUser);
+    await logoutUser(authToken).should.be.fulfilled;
+    await logoutUser(authToken).should.be.rejectedWith(Error);
+  });
+  it('should throw error when token not supplied', async () => {
+    await callMiddleware(auth.logout()).should.be.rejectedWith(Error);
+  });
+  it('should throw error when wrong token supplied', async () => {
+    await logoutUser('wrongToken').should.be.rejectedWith(Error);
   });
 });
 
@@ -179,6 +184,14 @@ function getTokenForUser(user) {
 
 function authorizeWithToken(token) {
   return callMiddleware(auth.authorize(), {
+    headers: {
+      'x-auth-token': token
+    }
+  });
+}
+
+function logoutUser(token) {
+  return callMiddleware(auth.logout(), {
     headers: {
       'x-auth-token': token
     }
