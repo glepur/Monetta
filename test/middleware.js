@@ -47,9 +47,36 @@ describe('login()', () => {
       .property('authToken')
       .with.lengthOf(auth.config.accessTokens.length);
   });
-
   it('should throw error when request body empty', async () => {
     await callMiddleware(auth.login()).should.be.rejectedWith(Error);
+  });
+  it('should throw error when main field empty', async () => {
+    var userClone = Object.assign({}, testUser);
+    delete userClone.username;
+    await callMiddleware(auth.login(), {
+      body: userClone
+    }).should.be.rejectedWith(Error);
+  });
+  it('should throw error when password empty', async () => {
+    var userClone = Object.assign({}, testUser);
+    delete userClone.password;
+    await callMiddleware(auth.login(), {
+      body: userClone
+    }).should.be.rejectedWith(Error);
+  });
+  it('should throw error when main field wrong', async () => {
+    var userClone = Object.assign({}, testUser);
+    userClone.username = 'wrongUsername';
+    await callMiddleware(auth.login(), {
+      body: userClone
+    }).should.be.rejectedWith(Error);
+  });
+  it('should throw error when password wrong', async () => {
+    var userClone = Object.assign({}, testUser);
+    userClone.password = 'wrongPassword';
+    await callMiddleware(auth.login(), {
+      body: userClone
+    }).should.be.rejectedWith(Error);
   });
 });
 
