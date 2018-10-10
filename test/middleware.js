@@ -47,6 +47,10 @@ describe('login()', () => {
       .property('authToken')
       .with.lengthOf(auth.config.accessTokens.length);
   });
+
+  it('should throw error when request body empty', async () => {
+    await callMiddleware(auth.login()).should.be.rejectedWith(Error);
+  });
 });
 
 describe('authorize()', () => {
