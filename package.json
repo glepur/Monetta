@@ -4,7 +4,7 @@
   "description": "Token authorization for MongoDB and Express",
   "main": "./lib",
   "scripts": {
-    "test": "nyc ./node_modules/mocha/bin/mocha"
+    "test": "nyc --reporter=lcov ./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
