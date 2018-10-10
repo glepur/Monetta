@@ -15,6 +15,10 @@ const testUser = {
   username: 'test-user',
   password: 'test-password'
 };
+const testUser2 = {
+  username: 'test-user-2',
+  password: 'test-password-2'
+};
 const accessTokenLength = 24;
 
 const auth = new Monetta({
@@ -32,6 +36,7 @@ before(async () => {
       userId: dbUser.insertedId,
       accessToken: testToken
     });
+    await db.collection('users').insertOne(testUser2);
     client.close();
   } catch (err) {
     throw err;
@@ -105,19 +110,19 @@ describe('authorize()', () => {
 describe('logout()', () => {
   it('should invalidate "authToken"', async () => {
     const authToken = await getTokenForUser(testUser);
-    await logoutUser(authToken).should.be.fulfilled;
+    await logoutWithToken(authToken).should.be.fulfilled;
     await authorizeWithToken(authToken).should.be.rejectedWith(Error);
   });
   it('should throw error when user already logged out', async () => {
     const authToken = await getTokenForUser(testUser);
-    await logoutUser(authToken).should.be.fulfilled;
-    await logoutUser(authToken).should.be.rejectedWith(Error);
+    await logoutWithToken(authToken).should.be.fulfilled;
+    await logoutWithToken(authToken).should.be.rejectedWith(Error);
   });
   it('should throw error when token not supplied', async () => {
     await callMiddleware(auth.logout()).should.be.rejectedWith(Error);
   });
   it('should throw error when wrong token supplied', async () => {
-    await logoutUser('wrongToken').should.be.rejectedWith(Error);
+    await logoutWithToken('wrongToken').should.be.rejectedWith(Error);
   });
 });
 
@@ -125,15 +130,27 @@ describe('logoutAll()', () => {
   it('should invalidate all auth tokens for specific user', async () => {
     const authToken1 = await getTokenForUser(testUser);
     const authToken2 = await getTokenForUser(testUser);
-
-    await callMiddleware(auth.logoutAll(), {
-      headers: {
-        'x-auth-token': authToken1
-      }
-    }).should.be.fulfilled;
-
+    await logoutAllWithToken(authToken1).should.be.fulfilled;
     await authorizeWithToken(authToken1).should.be.rejectedWith(Error);
     await authorizeWithToken(authToken2).should.be.rejectedWith(Error);
+  });
+  it('should not invalidate other users', async () => {
+    const authToken1 = await getTokenForUser(testUser);
+    const authToken2 = await getTokenForUser(testUser2);
+    await logoutAllWithToken(authToken1).should.be.fulfilled;
+    await authorizeWithToken(authToken1).should.be.rejectedWith(Error);
+    await authorizeWithToken(authToken2).should.be.fulfilled;
+  });
+  it('should throw error when user already logged out', async () => {
+    const authToken = await getTokenForUser(testUser);
+    await logoutWithToken(authToken).should.be.fulfilled;
+    await logoutAllWithToken(authToken).should.be.rejectedWith(Error);
+  });
+  it('should throw error when token not supplied', async () => {
+    await callMiddleware(auth.logoutAll()).should.be.rejectedWith(Error);
+  });
+  it('should throw error when wrong token supplied', async () => {
+    await logoutAllWithToken('wrongToken').should.be.rejectedWith(Error);
   });
 });
 
@@ -190,8 +207,16 @@ function authorizeWithToken(token) {
   });
 }
 
-function logoutUser(token) {
+function logoutWithToken(token) {
   return callMiddleware(auth.logout(), {
+    headers: {
+      'x-auth-token': token
+    }
+  });
+}
+
+function logoutAllWithToken(token) {
+  return callMiddleware(auth.logoutAll(), {
     headers: {
       'x-auth-token': token
     }
