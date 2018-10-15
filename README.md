@@ -20,7 +20,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const crypto = require('crypto');
-const Monetta = require('../lib/index.js');
+const Monetta = require('monetta');
 
 const config = {
   mongoConnection: {
@@ -84,3 +84,7 @@ app.use((err, req, res, next) => {
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
 ```
+
+## TODO
+- [ ] Add access token expiration
+- [ ] Add option to use refresh token
