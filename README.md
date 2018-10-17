@@ -133,6 +133,16 @@ app.post('/login', auth.login(), (req, res) =>
 );
 ```
 
+### authorize
+
+Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for user related to that access token. If user is found it will bind user object to `req.user`, otherwise, it will throw error.
+
+```javascript
+app.get('/profile', auth.authorize(), (req, res) =>
+  res.json({ user: req.user })
+);
+```
+
 ## TODO
 
 - [ ] Add access token expiration
