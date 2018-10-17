@@ -125,7 +125,7 @@ Request body could look like this:
 }
 ```
 
-Login middleware will check `super_cool_users` collection for user with property `super_cool_name` that equals `test`. Then it will compare password hash from `super_cool_pass` property from request body to one in database. If user is not found or password hashes do not match it will throw error. If user is found it will create access token, store it in database, and create `req.accessToken` property containing said token.
+Login middleware will check `super_cool_users` collection for user with property `super_cool_name` that equals `test`. Then it will compare password hash from `super_cool_pass` property from request body to one in database. If user is not found or password hashes do not match it will throw error. If user is found it will create access token, store it in database, and create `req.authToken` property containing said token.
 
 ```javascript
 app.post('/login', auth.login(), (req, res) =>
