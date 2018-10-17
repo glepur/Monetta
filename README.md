@@ -135,11 +135,35 @@ app.post('/login', auth.login(), (req, res) =>
 
 ### authorize
 
-Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for user related to that access token. If user is found it will bind user object to `req.user`, otherwise, it will throw error.
+Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for user related to that access token. If user is found it will bind user object to `req.user`, otherwise it will throw error.
 
 ```javascript
 app.get('/profile', auth.authorize(), (req, res) =>
   res.json({ user: req.user })
+);
+```
+
+### logout
+
+Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for that token. If token is found it will delete the token from database, otherwise it will throw error.
+
+```javascript
+app.post('/logout', auth.logout(), (req, res) =>
+  res.json({
+    message: 'Logout succesful'
+  })
+);
+```
+
+### logout all
+
+Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for that token. If token is found it will find user who owns the token and delete all tokens owned bt that user, otherwise it will throw error.
+
+```javascript
+app.post('/logout-all', auth.logoutAll(), (req, res) =>
+  res.json({
+    message: 'All devices are logged out'
+  })
 );
 ```
 
