@@ -171,3 +171,4 @@ app.post('/logout-all', auth.logoutAll(), (req, res) =>
 
 - [ ] Add access token expiration
 - [ ] Add option to use refresh token
+- [ ] Add http error codes on thrown errors
