@@ -157,7 +157,7 @@ app.post('/logout', auth.logout(), (req, res) =>
 
 ### logoutAll
 
-Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for that token. If token is found it will find user who owns the token and delete all tokens owned bt that user, otherwise it will throw error.
+Returns middleware that checks header specified in `accessTokens.httpHeader` for access token. Then it searches database for that token. If token is found it will find user who owns the token and delete all tokens owned by that user, otherwise it will throw error.
 
 ```javascript
 app.post('/logout-all', auth.logoutAll(), (req, res) =>
