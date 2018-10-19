@@ -21,13 +21,14 @@ const testUser2 = {
 };
 const accessTokenLength = 24;
 
-const auth = new Monetta({
-  mongoConnectionUri,
-  generatePasswordHash: p => p
-});
+let auth;
 
-before(async () => {
+beforeEach(async () => {
   try {
+    auth = new Monetta({
+      mongoConnectionUri,
+      generatePasswordHash: p => p
+    });
     await auth.db.connectionReady();
     const client = await connectToMongo();
     const db = client.db();
@@ -38,6 +39,18 @@ before(async () => {
     });
     await db.collection('users').insertOne(testUser2);
     client.close();
+  } catch (err) {
+    throw err;
+  }
+});
+
+afterEach(async () => {
+  try {
+    const client = await connectToMongo();
+    const db = client.db();
+    await db.dropDatabase();
+    client.close();
+    auth.closeDbConnection();
   } catch (err) {
     throw err;
   }
@@ -81,6 +94,16 @@ describe('login()', () => {
     userClone.password = 'wrongPassword';
     await callMiddleware(auth.login(), {
       body: userClone
+    }).should.be.rejectedWith(Error);
+  });
+  it('should throw error when maximum number of access tokens excedeed', async () => {
+    for (var i = 0; i < auth.config.accessTokens.maxAllowed; i++) {
+      await callMiddleware(auth.login(), {
+        body: testUser
+      }).should.be.fulfilled;
+    }
+    await callMiddleware(auth.login(), {
+      body: testUser
     }).should.be.rejectedWith(Error);
   });
 });
@@ -152,18 +175,6 @@ describe('logoutAll()', () => {
   it('should throw error when wrong token supplied', async () => {
     await logoutAllWithToken('wrongToken').should.be.rejectedWith(Error);
   });
-});
-
-after(async () => {
-  try {
-    const client = await connectToMongo();
-    const db = client.db();
-    await db.dropDatabase();
-    client.close();
-    auth.closeDbConnection();
-  } catch (err) {
-    throw err;
-  }
 });
 
 function connectToMongo() {
