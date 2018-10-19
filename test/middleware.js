@@ -27,7 +27,7 @@ beforeEach(async () => {
   try {
     auth = new Monetta({
       mongoConnectionUri,
-      generatePasswordHash: p => p
+      logLevel: 0
     });
     await auth.db.connectionReady();
     const client = await connectToMongo();
