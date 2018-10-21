@@ -22,15 +22,24 @@ const testUser2 = {
 const accessTokenLength = 24;
 
 let auth;
+let client;
+
+before(async () => {
+  client = await connectToMongo();
+  auth = new Monetta({
+    mongoConnectionUri,
+    logLevel: 0
+  });
+  await auth.db.connectionReady();
+});
+
+after(async () => {
+  client.close();
+  auth.closeDbConnection();
+});
 
 beforeEach(async () => {
   try {
-    auth = new Monetta({
-      mongoConnectionUri,
-      logLevel: 0
-    });
-    await auth.db.connectionReady();
-    const client = await connectToMongo();
     const db = client.db();
     const dbUser = await db.collection('users').insertOne(testUser);
     await db.collection('tokens').insertOne({
@@ -38,7 +47,6 @@ beforeEach(async () => {
       accessToken: testToken
     });
     await db.collection('users').insertOne(testUser2);
-    client.close();
   } catch (err) {
     throw err;
   }
@@ -46,11 +54,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
   try {
-    const client = await connectToMongo();
     const db = client.db();
     await db.dropDatabase();
-    client.close();
-    auth.closeDbConnection();
   } catch (err) {
     throw err;
   }
