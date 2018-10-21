@@ -133,6 +133,16 @@ describe('authorize()', () => {
       headers: { 'x-auth-token': 'wrongToken' }
     }).should.be.rejectedWith(Error);
   });
+  it('should throw error when owner of the token does not exist', async () => {
+    const request = await callMiddleware(auth.login(), {
+      body: testUser
+    }).should.be.fulfilled;
+    const db = client.db();
+    db.collection('users').deleteOne(testUser);
+    await callMiddleware(auth.authorize(), {
+      headers: { 'x-auth-token': request.authToken }
+    }).should.be.rejectedWith(Error);
+  });
 });
 
 describe('logout()', () => {
