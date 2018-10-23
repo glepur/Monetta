@@ -1,10 +1,10 @@
 const Mongo = require('../lib/mongo.js');
 const chai = require('chai');
-const expect = chai.expect;
+const should = chai.should();
 
 describe('mongo.disconnect()', () => {
   it('should throw error if connection not established', () => {
     const mongo = new Mongo({});
-    expect(mongo.disconnect.bind(mongo)).to.throw(Error);
+    mongo.disconnect.bind(mongo).should.throw(Error);
   });
 });
