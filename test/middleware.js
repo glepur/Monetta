@@ -28,7 +28,7 @@ before(async () => {
   client = await connectToMongo();
   auth = new Monetta({
     mongoConnectionUri,
-    logLevel: 0
+    silent: true
   });
   await auth.db.connectionReady();
 });
