@@ -1,6 +1,6 @@
 {
   "name": "monetta",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Token authorization for MongoDB and Express",
   "main": "./lib",
   "scripts": {
