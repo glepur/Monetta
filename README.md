@@ -80,7 +80,7 @@ app.post('/logout-all', auth.logoutAll(), (req, res) =>
 
 app.use((err, req, res, next) => {
   console.log(err);
-  res.status(403).json({ error: err.message });
+  res.status(err.status).json({ error: err.message });
 });
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
