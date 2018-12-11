@@ -4,6 +4,7 @@ const should = chai.should();
 const chaiAsPromised = require('chai-as-promised');
 const httpMocks = require('node-mocks-http');
 const MongoClient = require('mongodb').MongoClient;
+const createError = require('http-errors');
 
 chai.use(chaiAsPromised);
 
@@ -71,35 +72,37 @@ describe('login()', () => {
       .with.lengthOf(auth.config.accessTokens.length);
   });
   it('should throw error when request body empty', async () => {
-    await callMiddleware(auth.login()).should.be.rejectedWith(Error);
+    await callMiddleware(auth.login()).should.be.rejectedWith(
+      createError.BadRequest
+    );
   });
-  it('should throw error when main field empty', async () => {
+  it('should throw error when main field does not exist', async () => {
     var userClone = Object.assign({}, testUser);
     delete userClone.username;
     await callMiddleware(auth.login(), {
       body: userClone
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.BadRequest);
   });
-  it('should throw error when password empty', async () => {
+  it('should throw error when password does not exist', async () => {
     var userClone = Object.assign({}, testUser);
     delete userClone.password;
     await callMiddleware(auth.login(), {
       body: userClone
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.BadRequest);
   });
   it('should throw error when main field wrong', async () => {
     var userClone = Object.assign({}, testUser);
     userClone.username = 'wrongUsername';
     await callMiddleware(auth.login(), {
       body: userClone
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.Unauthorized);
   });
   it('should throw error when password wrong', async () => {
     var userClone = Object.assign({}, testUser);
     userClone.password = 'wrongPassword';
     await callMiddleware(auth.login(), {
       body: userClone
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.Unauthorized);
   });
   it('should throw error when maximum number of access tokens excedeed', async () => {
     for (var i = 0; i < auth.config.accessTokens.maxAllowed; i++) {
@@ -109,7 +112,7 @@ describe('login()', () => {
     }
     await callMiddleware(auth.login(), {
       body: testUser
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.Forbidden);
   });
 });
 
@@ -126,12 +129,14 @@ describe('authorize()', () => {
     request.user.should.have.property('password');
   });
   it('should throw error when token not supplied', async () => {
-    await callMiddleware(auth.authorize()).should.be.rejectedWith(Error);
+    await callMiddleware(auth.authorize()).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when wrong token supplied', async () => {
     await callMiddleware(auth.authorize(), {
       headers: { 'x-auth-token': 'wrongToken' }
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.Unauthorized);
   });
   it('should throw error when owner of the token does not exist', async () => {
     const request = await callMiddleware(auth.login(), {
@@ -141,7 +146,7 @@ describe('authorize()', () => {
     db.collection('users').deleteOne(testUser);
     await callMiddleware(auth.authorize(), {
       headers: { 'x-auth-token': request.authToken }
-    }).should.be.rejectedWith(Error);
+    }).should.be.rejectedWith(createError.Unauthorized);
   });
 });
 
@@ -149,18 +154,26 @@ describe('logout()', () => {
   it('should invalidate "authToken"', async () => {
     const authToken = await getTokenForUser(testUser);
     await logoutWithToken(authToken).should.be.fulfilled;
-    await authorizeWithToken(authToken).should.be.rejectedWith(Error);
+    await authorizeWithToken(authToken).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when user already logged out', async () => {
     const authToken = await getTokenForUser(testUser);
     await logoutWithToken(authToken).should.be.fulfilled;
-    await logoutWithToken(authToken).should.be.rejectedWith(Error);
+    await logoutWithToken(authToken).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when token not supplied', async () => {
-    await callMiddleware(auth.logout()).should.be.rejectedWith(Error);
+    await callMiddleware(auth.logout()).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when wrong token supplied', async () => {
-    await logoutWithToken('wrongToken').should.be.rejectedWith(Error);
+    await logoutWithToken('wrongToken').should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
 });
 
@@ -169,26 +182,38 @@ describe('logoutAll()', () => {
     const authToken1 = await getTokenForUser(testUser);
     const authToken2 = await getTokenForUser(testUser);
     await logoutAllWithToken(authToken1).should.be.fulfilled;
-    await authorizeWithToken(authToken1).should.be.rejectedWith(Error);
-    await authorizeWithToken(authToken2).should.be.rejectedWith(Error);
+    await authorizeWithToken(authToken1).should.be.rejectedWith(
+      createError.Unauthorized
+    );
+    await authorizeWithToken(authToken2).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should not invalidate other users', async () => {
     const authToken1 = await getTokenForUser(testUser);
     const authToken2 = await getTokenForUser(testUser2);
     await logoutAllWithToken(authToken1).should.be.fulfilled;
-    await authorizeWithToken(authToken1).should.be.rejectedWith(Error);
+    await authorizeWithToken(authToken1).should.be.rejectedWith(
+      createError.Unauthorized
+    );
     await authorizeWithToken(authToken2).should.be.fulfilled;
   });
   it('should throw error when user already logged out', async () => {
     const authToken = await getTokenForUser(testUser);
     await logoutWithToken(authToken).should.be.fulfilled;
-    await logoutAllWithToken(authToken).should.be.rejectedWith(Error);
+    await logoutAllWithToken(authToken).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when token not supplied', async () => {
-    await callMiddleware(auth.logoutAll()).should.be.rejectedWith(Error);
+    await callMiddleware(auth.logoutAll()).should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
   it('should throw error when wrong token supplied', async () => {
-    await logoutAllWithToken('wrongToken').should.be.rejectedWith(Error);
+    await logoutAllWithToken('wrongToken').should.be.rejectedWith(
+      createError.Unauthorized
+    );
   });
 });
 
